@@ -28,6 +28,23 @@ class TwigAdapter extends Fractal.Adapter {
                 if (params.precompiled) {
                     params.data = params.precompiled;
                 } else {
+                    /**
+                     * When @extending a template, any @items inside that extend
+                     * are prefixed with the relative path of the current file.
+                     * e.g. @site-header inside /wrapper/_base.html
+                     *     -> /wrapper/@site-header
+                     *
+                     * Let's search for paths with a '/' and try and find a
+                     * single handle in the path that's usable.
+                     */
+                    if (location.includes('/')) {
+                        const handles = location.split('/').filter(x => isHandle(x))
+
+                        if (handles.length === 1 && isHandle(handles[0])) {
+                            location = handles[0]
+                        }
+                    }
+
                     let view = isHandle(location) ? self.getView(location) : _.find(self.views, {path: Path.join(source.fullPath, location)});
                     if (!view) {
 
